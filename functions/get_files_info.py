@@ -1,4 +1,5 @@
 import os
+from config import MAX_CHARS
 
 def get_files_info(working_directory, directory="."):
     file_directory = os.path.join(working_directory, directory)
@@ -28,3 +29,5 @@ def get_files_info(working_directory, directory="."):
         except:
             continue
     return answer
+
+
