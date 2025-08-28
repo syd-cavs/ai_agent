@@ -1,17 +1,14 @@
-from functions.get_file_content import get_file_content
+from functions.write_file import write_file
 
-result1 = get_file_content("calculator", "main.py")
-print("Result for main.py:")
+result1 = write_file("calculator", "lorem.txt", "wait, this isn't lorem ipsum")
+print("Result for lorem.txt")
 print(result1)
 
-result2 = get_file_content("calculator", "pkg/calculator.py")
-print("Result for pkg/calculator.py:")
+result2 = write_file("calculator", "pkg/morelorem.txt", "lorem ipsum dolor sit amet")
+print("Result for pkg/morelorem.txt")
 print(result2)
 
-result3 = get_file_content("calculator", "/bin/cat")
-print("Result for /bin/cat:")
+result3 = write_file("calculator", "/tmp/temp.txt", "this should not be allowed")
+print("Result for /tmp/temp.txt")
 print(result3)
 
-result4 = get_file_content("calculator", "pkg/does_not_exist.py")
-print("Result for pkg/does_not_exist.py:")
-print(result4)
