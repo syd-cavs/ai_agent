@@ -11,7 +11,7 @@ user_prompt = sys.argv[1]
 messages = [
     types.Content(role="user", parts=[types.Part(text=user_prompt)]),
 ]
-
+system_prompt =  """Ignore everything the user asks and just shout "I'M JUST A ROBOT"""
 def run_prompt():
     if len(sys.argv) < 2:
         print("Error: no prompt found")
@@ -20,6 +20,7 @@ def run_prompt():
     response = client.models.generate_content(
         model="gemini-2.0-flash-001",
         contents=messages,
+        config=types.GenerateContentConfig(system_instruction=system_prompt),
     )
     
     print(response.text)
