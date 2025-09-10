@@ -22,33 +22,46 @@ def run_prompt():
     messages = [
         types.Content(role="user", parts=[types.Part(text=user_prompt)]),
     ]
-    response = client.models.generate_content(
-        model="gemini-2.0-flash-001",
-        contents=messages,
-        config=types.GenerateContentConfig(
-            tools=[available_functions], system_instruction=system_prompt
-        )
-    )
-    
-    if response.function_calls:
-        for function_call_part in response.function_calls:
-            function_call_result = call_function(function_call_part, verbose=verbose) 
 
-            if (not function_call_result.parts
-                or not getattr(function_call_result.parts[0], "function_response", None)
-                or function_call_result.parts[0].function_response.response is None):
-                raise RuntimeError("Function call did not return a function_response")
-            
+    done = False
+    loop = 0
+    while loop < 20 and not done:
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.0-flash-001",
+                contents=messages,
+                config=types.GenerateContentConfig(
+                    tools=[available_functions], system_instruction=system_prompt
+                )
+            )
+            for candidate in response.candidates:
+                messages.append(candidate.content)
+
+            if response.function_calls:
+                for function_call_part in response.function_calls:
+                    function_call_result = call_function(function_call_part, verbose=verbose) 
+                    messages.append(types.Content(role="user", parts=function_call_result.parts))
+
+                    if (not function_call_result.parts
+                        or not getattr(function_call_result.parts[0], "function_response", None)
+                        or function_call_result.parts[0].function_response.response is None):
+                        raise RuntimeError("Function call did not return a function_response")
+                        
+                    if verbose:
+                        print(f"-> {function_call_result.parts[0].function_response.response}")
+            elif response.text:
+                print(response.text)
+                messages.append(types.Content(role="model", parts=[types.Part(text=response.text)]))
+                done = True
+            loop += 1
+
             if verbose:
-                print(f"-> {function_call_result.parts[0].function_response.response}")
-    else:
-        print(response.text)
-
-
-    if verbose:
-        print(f"User prompt: {user_prompt}")
-        print(f'Prompt tokens: {response.usage_metadata.prompt_token_count}')
-        print(f'Response tokens: {response.usage_metadata.candidates_token_count}')
+                print(f"User prompt: {user_prompt}")
+                print(f'Prompt tokens: {response.usage_metadata.prompt_token_count}')
+                print(f'Response tokens: {response.usage_metadata.candidates_token_count}')
+        except Exception as e:
+            return f"Error: {e}"
+        
 
 if __name__ == "__main__":
     run_prompt()
